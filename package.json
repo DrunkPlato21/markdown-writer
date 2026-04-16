@@ -1,0 +1,48 @@
+{
+  "name": "markdown-writer",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build",
+    "start": "vite build && electron .",
+    "package": "vite build && electron-builder --win"
+  },
+  "dependencies": {
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/extension-bubble-menu": "^2.11.0",
+    "@tiptap/extension-link": "^2.11.0",
+    "@tiptap/extension-placeholder": "^2.11.0",
+    "@tiptap/pm": "^2.11.0",
+    "@tiptap/starter-kit": "^2.11.0",
+    "tiptap-markdown": "^0.8.0"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "concurrently": "^9.0.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^3.0.1",
+    "rcedit": "^5.0.2",
+    "vite": "^6.0.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.markdown-writer.app",
+    "productName": "Markdown Writer",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "icon.png"
+    ],
+    "win": {
+      "target": "dir",
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
+    }
+  }
+}

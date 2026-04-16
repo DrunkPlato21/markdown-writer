@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Writer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <!-- Title bar -->
+    <div class="titlebar">
+      <div class="titlebar-drag">
+        <span class="title-filename">Untitled</span>
+        <span class="save-indicator">saved</span>
+      </div>
+      <div class="titlebar-actions">
+        <button class="titlebar-btn" id="btn-font" title="Cycle font (Ctrl+/)">
+          <span id="font-label">Cormorant Garamond</span>
+        </button>
+        <button class="titlebar-btn" id="btn-focus" title="Focus mode (F8)">
+          Focus
+        </button>
+        <button class="titlebar-btn" id="btn-open" title="Open file (Ctrl+O)">
+          Open
+        </button>
+        <button class="titlebar-btn" id="btn-new" title="New file (Ctrl+N)">
+          New
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar" id="tab-bar"></div>
+
+    <!-- Find / Replace bar -->
+    <div class="find-bar" id="find-bar">
+      <div class="find-row">
+        <input type="text" id="find-input" placeholder="Find..." spellcheck="false" />
+        <span class="find-count" id="find-count"></span>
+        <button class="find-btn" id="find-prev" title="Previous (Shift+Enter)">&#8593;</button>
+        <button class="find-btn" id="find-next" title="Next (Enter)">&#8595;</button>
+        <button class="find-btn" id="find-toggle-replace" title="Toggle replace (Ctrl+H)">&#8597;</button>
+        <button class="find-btn" id="find-close" title="Close (Esc)">&times;</button>
+      </div>
+      <div class="replace-row" id="replace-row">
+        <input type="text" id="replace-input" placeholder="Replace..." spellcheck="false" />
+        <button class="find-btn" id="replace-one">Replace</button>
+        <button class="find-btn" id="replace-all">All</button>
+      </div>
+    </div>
+
+    <!-- Bubble menu (positioned by TipTap) -->
+    <div class="bubble-menu">
+      <button data-action="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+      <button data-action="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+      <button data-action="strike" title="Strikethrough"><s>S</s></button>
+      <span class="bubble-divider"></span>
+      <button data-action="heading1" title="Heading 1">H1</button>
+      <button data-action="heading2" title="Heading 2">H2</button>
+      <button data-action="heading3" title="Heading 3">H3</button>
+      <span class="bubble-divider"></span>
+      <button data-action="blockquote" title="Quote">&ldquo;</button>
+      <button data-action="bulletList" title="Bullet list">&bull;</button>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor-wrap">
+      <div id="editor"></div>
+    </div>
+
+    <!-- Word count -->
+    <div class="word-count">
+      <span id="wc">0 words</span>
+    </div>
+
+    <!-- Drop overlay -->
+    <div class="drop-overlay">
+      <div class="drop-message">Drop .md file to open</div>
+    </div>
+
+    <script type="module" src="/src/editor.js"></script>
+  </body>
+</html>
