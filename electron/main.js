@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -40,9 +40,9 @@ function createWindow() {
     show: false,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#0f0f0f',
-      symbolColor: '#665e52',
-      height: 40,
+      color: '#181410',
+      symbolColor: '#968c7b',
+      height: 44,
     },
     icon: path.join(__dirname, '..', 'icon.png'),
     webPreferences: {
@@ -69,7 +69,52 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // On load: open CLI file arg, or last opened file from settings
+  // Spellcheck
+  mainWindow.webContents.session.setSpellCheckerLanguages(['en-US']);
+
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const template = [];
+
+    if (params.misspelledWord) {
+      if (params.dictionarySuggestions.length === 0) {
+        template.push({ label: 'No suggestions', enabled: false });
+      } else {
+        for (const suggestion of params.dictionarySuggestions) {
+          template.push({
+            label: suggestion,
+            click: () => mainWindow.webContents.replaceMisspelling(suggestion),
+          });
+        }
+      }
+      template.push({ type: 'separator' });
+      template.push({
+        label: 'Add to Dictionary',
+        click: () =>
+          mainWindow.webContents.session.addWordToSpellCheckerDictionary(
+            params.misspelledWord
+          ),
+      });
+      template.push({ type: 'separator' });
+    }
+
+    if (params.isEditable) {
+      template.push(
+        { role: 'cut', enabled: params.editFlags.canCut },
+        { role: 'copy', enabled: params.editFlags.canCopy },
+        { role: 'paste', enabled: params.editFlags.canPaste },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      );
+    } else if (params.selectionText) {
+      template.push({ role: 'copy' });
+    }
+
+    if (template.length > 0) {
+      Menu.buildFromTemplate(template).popup({ window: mainWindow });
+    }
+  });
+
+  // On load: open CLI file arg if given, otherwise reopen the last file.
   const fileArg = process.argv.find(
     (arg) =>
       !arg.startsWith('-') &&
@@ -90,7 +135,10 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate([]));
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   app.quit();
@@ -100,6 +148,15 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('read-file', async (_event, filePath) => {
   return fs.readFileSync(filePath, 'utf-8');
+});
+
+ipcMain.handle('rename-file', async (_event, oldPath, newPath) => {
+  try {
+    fs.renameSync(oldPath, newPath);
+    return true;
+  } catch {
+    return false;
+  }
 });
 
 ipcMain.handle('write-file', async (_event, filePath, content) => {
@@ -140,6 +197,15 @@ ipcMain.handle('set-title', (_event, title) => {
   if (mainWindow) mainWindow.setTitle(title);
 });
 
+ipcMain.handle('ensure-dir', (_event, dirPath) => {
+  fs.mkdirSync(dirPath, { recursive: true });
+  return true;
+});
+
+ipcMain.handle('get-documents-path', () => {
+  return app.getPath('documents').replace(/\\/g, '/');
+});
+
 ipcMain.handle('get-settings', () => {
   return readSettings();
 });
@@ -149,12 +215,25 @@ ipcMain.handle('save-settings', (_event, data) => {
   return true;
 });
 
+ipcMain.handle('show-in-folder', (_event, filePath) => {
+  if (filePath && fs.existsSync(filePath)) {
+    shell.showItemInFolder(filePath);
+    return true;
+  }
+  return false;
+});
+
 ipcMain.handle('toggle-fullscreen', () => {
   if (mainWindow) {
     mainWindow.setFullScreen(!mainWindow.isFullScreen());
     return mainWindow.isFullScreen();
   }
   return false;
+});
+
+ipcMain.handle('set-fullscreen', (_event, on) => {
+  if (mainWindow) mainWindow.setFullScreen(!!on);
+  return mainWindow?.isFullScreen() ?? false;
 });
 
 // ---- Draft persistence (crash recovery) ----

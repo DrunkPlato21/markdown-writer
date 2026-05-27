@@ -41,8 +41,7 @@
     ],
     "win": {
       "target": "dir",
-      "icon": "icon.ico",
-      "signAndEditExecutable": false
+      "icon": "icon.ico"
     }
   }
 }

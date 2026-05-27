@@ -3,3 +3,11 @@ dist/
 .vite/
 release/
 .tmp-icons/
+
+# Dev/tooling artifacts
+.claude/settings.local.json
+.playwright-mcp/
+
+# Throwaway titlebar/dev screenshots
+tb-*.png
+titlebar-*.png

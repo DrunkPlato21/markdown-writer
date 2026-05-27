@@ -10,30 +10,75 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <!-- Title bar -->
+    <!-- Title bar
+         Two stacked rows:
+           1. Drag strip — full-width grab area; OS traffic-lights overlay
+              its right end (height matches `titleBarOverlay.height` in
+              electron/main.js). Nothing else lives here except the save
+              indicator floating at the right.
+           2. Controls row — tabs on the left, modes/actions on the right.
+              Has full window width to breathe because OS controls sit on
+              row 1, not here. -->
     <div class="titlebar">
-      <div class="titlebar-drag">
-        <span class="title-filename">Untitled</span>
+      <div class="titlebar-drag-strip">
+        <span class="titlebar-spacer" aria-hidden="true"></span>
+        <span class="titlebar-mark">Markdown Writer</span>
         <span class="save-indicator">saved</span>
       </div>
-      <div class="titlebar-actions">
-        <button class="titlebar-btn" id="btn-font" title="Cycle font (Ctrl+/)">
-          <span id="font-label">Cormorant Garamond</span>
-        </button>
-        <button class="titlebar-btn" id="btn-focus" title="Focus mode (F8)">
-          Focus
-        </button>
-        <button class="titlebar-btn" id="btn-open" title="Open file (Ctrl+O)">
-          Open
-        </button>
-        <button class="titlebar-btn" id="btn-new" title="New file (Ctrl+N)">
-          New
-        </button>
+      <div class="titlebar-controls">
+        <div class="tab-bar" id="tab-bar"></div>
+        <div class="titlebar-drag-zone"></div>
+        <div class="titlebar-actions">
+          <button class="titlebar-btn titlebar-font" id="btn-font" title="Cormorant Garamond — cycle font (Ctrl+/)">
+            <span class="font-label-stack">
+              <span id="font-label">Cormorant Garamond</span>
+              <!-- Ghost labels appended at boot from the fonts array; they
+                   hold the button's width steady at the longest name. -->
+            </span>
+          </button>
+          <span class="titlebar-divider"></span>
+          <!-- View dropdown — collapses the four mode toggles (Outline / Focus
+               / Typewriter / Read) into a single popover so the chrome stays
+               narrow and tabs get the rest of the width. The trigger picks up
+               an accent tint when any mode inside is active. -->
+          <div class="view-menu">
+            <button class="titlebar-btn titlebar-action view-trigger" id="btn-view" type="button" title="View options" aria-haspopup="true" aria-expanded="false">
+              <span class="view-trigger-label">View</span>
+              <span class="view-trigger-caret" aria-hidden="true">&#9662;</span>
+            </button>
+            <div class="view-dropdown" id="view-dropdown" role="menu" hidden>
+              <button class="view-dropdown-item" id="btn-outline" type="button" role="menuitemcheckbox" title="Outline (F7)">
+                <span class="toggle-dot" aria-hidden="true"></span>
+                <span class="view-item-label">Outline</span>
+                <span class="view-item-shortcut">F7</span>
+              </button>
+              <button class="view-dropdown-item" id="btn-focus" type="button" role="menuitemcheckbox" title="Focus mode (F8)">
+                <span class="toggle-dot" aria-hidden="true"></span>
+                <span class="view-item-label">Focus</span>
+                <span class="view-item-shortcut">F8</span>
+              </button>
+              <button class="view-dropdown-item" id="btn-typewriter" type="button" role="menuitemcheckbox" title="Typewriter mode (F9)">
+                <span class="toggle-dot" aria-hidden="true"></span>
+                <span class="view-item-label">Typewriter</span>
+                <span class="view-item-shortcut">F9</span>
+              </button>
+              <button class="view-dropdown-item" id="btn-read" type="button" role="menuitemcheckbox" title="Read mode (F11)">
+                <span class="toggle-dot" aria-hidden="true"></span>
+                <span class="view-item-label">Read</span>
+                <span class="view-item-shortcut">F11</span>
+              </button>
+            </div>
+          </div>
+          <span class="titlebar-divider"></span>
+          <button class="titlebar-btn titlebar-action" id="btn-open" title="Open file (Ctrl+O)">
+            Open
+          </button>
+          <button class="titlebar-btn titlebar-action" id="btn-save-as" title="Save as… (Ctrl+Shift+S)">
+            Save as
+          </button>
+        </div>
       </div>
     </div>
-
-    <!-- Tab bar -->
-    <div class="tab-bar" id="tab-bar"></div>
 
     <!-- Find / Replace bar -->
     <div class="find-bar" id="find-bar">
@@ -64,7 +109,31 @@
       <span class="bubble-divider"></span>
       <button data-action="blockquote" title="Quote">&ldquo;</button>
       <button data-action="bulletList" title="Bullet list">&bull;</button>
+      <span class="bubble-divider"></span>
+      <button data-action="link" title="Link (Ctrl+K)">&#128279;</button>
     </div>
+
+    <!-- Link dialog -->
+    <div class="link-dialog" id="link-dialog">
+      <div class="link-dialog-inner">
+        <label for="link-url">Link URL</label>
+        <input type="text" id="link-url" placeholder="https://" spellcheck="false" />
+        <div class="link-dialog-actions">
+          <button id="link-remove" class="link-btn link-btn-secondary">Remove</button>
+          <span class="link-dialog-spacer"></span>
+          <button id="link-cancel" class="link-btn link-btn-secondary">Cancel</button>
+          <button id="link-apply" class="link-btn link-btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outline sidebar (toggle: F7) -->
+    <aside class="outline-sidebar" id="outline-sidebar" aria-label="Document outline">
+      <div class="outline-header">Outline</div>
+      <div class="outline-list" id="outline-list">
+        <div class="outline-empty">No headings yet</div>
+      </div>
+    </aside>
 
     <!-- Editor -->
     <div class="editor-wrap">
